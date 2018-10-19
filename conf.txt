@@ -1,8 +1,0 @@
-[path]
-document_path = A:\Sapphire\inverted-index-python\documents\
-temp_path = A:\Sapphire\inverted-index-python\temp\
-
-[filename]
-docnum_file = docnum.json
-wordnum_file = word_number.csv
-index_file = index.csv

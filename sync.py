@@ -1,6 +1,6 @@
-import docnum
 import mapper
+import reducer
 
 if __name__ == '__main__':
-    docnum.number_docs()
     mapper.map()
+    reducer.reduce()
