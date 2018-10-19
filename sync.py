@@ -8,7 +8,7 @@ import json
 document_file = 'data.CSV'
 temp_path = 'temp/'
 docname_file = 'docname.json'
-inverted_index_file = 'inverted_index.json'
+inverted_index_file = 'inverted-index.json'
 
 if __name__ == '__main__':
     
@@ -17,6 +17,8 @@ if __name__ == '__main__':
 
     tokenizer = RegexpTokenizer(r'\w+')
     docname = {}
+
+    doc_word = []
 
     with open(document_file) as csvfile:
         reader = csv.reader(csvfile)
@@ -35,9 +37,10 @@ if __name__ == '__main__':
                     else:
                         word_dict[raw_word] += 1
 
-            tpath = os.path.join(temp_path, str(count)+'.json')
-            with open(tpath, 'wb') as tmpf:
-                tmpf.write(json.dumps(word_dict).encode('utf-8'))
+            doc_word.append(word_dict)
+            # tpath = os.path.join(temp_path, str(count)+'.json')
+            # with open(tpath, 'wb') as tmpf:
+            #     tmpf.write(json.dumps(word_dict).encode('utf-8'))
 
             docname[count] = row[0]
 
@@ -48,19 +51,15 @@ if __name__ == '__main__':
 
     invindex = dict()
     files= os.listdir(temp_path)
-    for file in files:
-        fname = file.split('.')[0]
-        f = open(temp_path + file)
-        data = json.load(f)
-        f.close()
+    
+    count = 0
+    for data in doc_word:
         for key in data:
             if key not in invindex:
-                invindex[key] = [int(fname)]
+                invindex[key] = [count]
             else:
-                invindex[key].append(int(fname))
-
-	# for k in invindex:
-	# 	invindex[k].sort()
+                invindex[key].append(count)
+        count += 1
 
     with open(inverted_index_file, 'wb') as f:
         f.write(json.dumps(invindex).encode('utf-8'))
