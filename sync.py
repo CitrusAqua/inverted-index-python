@@ -4,14 +4,24 @@ from nltk.tokenize import RegexpTokenizer
 import csv
 import os
 import json
+import math
 
 document_file = 'data.CSV'
 temp_path = 'temp/'
 docname_file = 'docname.json'
-inverted_index_file = 'inverted-index.json'
+doc_word_file = 'doc_word.json'
+doc_tf_file = 'doc_tf.json'
+doc_idf_file = 'doc_idf.json'
+tf_idf_file = 'tf_idf.json'
+inverted_index_file = 'inverted_index.json'
+
+def gettf(f):
+    if f == 0:
+        return 0
+    return 1 + math.log(f, 10)
 
 if __name__ == '__main__':
-    
+
     if not os.path.exists(temp_path):
         os.mkdir(temp_path)
 
@@ -19,6 +29,9 @@ if __name__ == '__main__':
     docname = {}
 
     doc_word = []
+    doc_tf = []
+    doc_idf = []
+    tf_idf = []
 
     with open(document_file) as csvfile:
         reader = csv.reader(csvfile)
@@ -38,20 +51,49 @@ if __name__ == '__main__':
                         word_dict[raw_word] += 1
 
             doc_word.append(word_dict)
-            # tpath = os.path.join(temp_path, str(count)+'.json')
-            # with open(tpath, 'wb') as tmpf:
-            #     tmpf.write(json.dumps(word_dict).encode('utf-8'))
+
+            tf_dict = {k: gettf(v) for k, v in word_dict.items()}
+            doc_tf.append(tf_dict)
 
             docname[count] = row[0]
 
             count += 1
 
-    with open(docname_file, 'wb') as dcnf:
-        dcnf.write(json.dumps(docname).encode('utf-8'))
+    for i in range(count):
+        idf_dict = dict()
+        tf_idf_dict = dict()
+        for k, v in doc_tf[i].items():
+            ni = 0
+            for item in doc_word:
+                if k in item:
+                    ni += 1
+            idf = math.log(count/ni, 10)
+            idf_dict[k] = idf
+            tf_idf_dict[k] = doc_tf[i][k] * idf
+
+        doc_idf.append(idf_dict)
+        tf_idf.append(tf_idf_dict)
+
+
+    with open(docname_file, 'wb') as thisfile:
+        thisfile.write(json.dumps(docname).encode('utf-8'))
+
+    with open(doc_word_file, 'wb') as thisfile:
+        thisfile.write(json.dumps(doc_word).encode('utf-8'))
+
+    with open(doc_tf_file, 'wb') as thisfile:
+        thisfile.write(json.dumps(doc_tf).encode('utf-8'))
+
+    with open(doc_idf_file, 'wb') as thisfile:
+        thisfile.write(json.dumps(doc_idf).encode('utf-8'))
+
+    with open(tf_idf_file, 'wb') as thisfile:
+        thisfile.write(json.dumps(tf_idf).encode('utf-8'))
+
 
     invindex = dict()
     files= os.listdir(temp_path)
-    
+
     count = 0
     for data in doc_word:
         for key in data:
