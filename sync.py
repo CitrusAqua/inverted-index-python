@@ -11,9 +11,16 @@ temp_path = 'temp/'
 docname_file = 'docname.json'
 doc_word_file = 'doc_word.json'
 doc_tf_file = 'doc_tf.json'
-doc_idf_file = 'doc_idf.json'
+word_idf_file = 'word_idf.json'
 tf_idf_file = 'tf_idf.json'
+tf_idf_abs_file = 'tf_idf_abs.json'
 inverted_index_file = 'inverted_index.json'
+
+def _abs(e):
+    sum = 0
+    for v in e.values():
+        sum += v*v
+    return math.sqrt(sum)
 
 def gettf(f):
     if f == 0:
@@ -30,10 +37,10 @@ if __name__ == '__main__':
 
     doc_word = []
     doc_tf = []
-    doc_idf = []
+    word_idf = dict()
     tf_idf = []
 
-    with open(document_file) as csvfile:
+    with open(document_file, encoding='utf-8') as csvfile:
         reader = csv.reader(csvfile)
         count = 0
         for row in reader:
@@ -60,19 +67,19 @@ if __name__ == '__main__':
             count += 1
 
     for i in range(count):
-        idf_dict = dict()
         tf_idf_dict = dict()
-        for k, v in doc_tf[i].items():
-            ni = 0
-            for item in doc_word:
-                if k in item:
-                    ni += 1
-            idf = math.log(count/ni, 10)
-            idf_dict[k] = idf
-            tf_idf_dict[k] = doc_tf[i][k] * idf
-
-        doc_idf.append(idf_dict)
+        for k in doc_tf[i]:
+            if k not in word_idf:
+                ni = 0
+                for item in doc_word:
+                    if k in item:
+                        ni += 1
+                idf = math.log(count/ni, 10)
+                word_idf[k] = idf
+            tf_idf_dict[k] = word_idf[k] * idf
         tf_idf.append(tf_idf_dict)
+
+    tf_idf_abs = [_abs(e) for e in tf_idf]
 
 
     with open(docname_file, 'wb') as thisfile:
@@ -84,11 +91,14 @@ if __name__ == '__main__':
     with open(doc_tf_file, 'wb') as thisfile:
         thisfile.write(json.dumps(doc_tf).encode('utf-8'))
 
-    with open(doc_idf_file, 'wb') as thisfile:
-        thisfile.write(json.dumps(doc_idf).encode('utf-8'))
+    with open(word_idf_file, 'wb') as thisfile:
+        thisfile.write(json.dumps(word_idf).encode('utf-8'))
 
     with open(tf_idf_file, 'wb') as thisfile:
         thisfile.write(json.dumps(tf_idf).encode('utf-8'))
+
+    with open(tf_idf_abs_file, 'wb') as thisfile:
+        thisfile.write(json.dumps(tf_idf_abs).encode('utf-8'))
 
 
     invindex = dict()
